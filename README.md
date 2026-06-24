@@ -17,3 +17,10 @@ npm install
 npm run build
 npm test
 ```
+
+## Release
+
+```bash
+npm version patch
+git push origin main --follow-tags
+```
