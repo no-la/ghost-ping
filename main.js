@@ -30,8 +30,7 @@ function collectMissingNoteBacklinkCounts(unresolvedLinks) {
   const counts = /* @__PURE__ */ new Map();
   for (const linksBySource of Object.values(unresolvedLinks)) {
     for (const [linktext, count] of Object.entries(linksBySource)) {
-      if (count <= 0)
-        continue;
+      if (count <= 0) continue;
       counts.set(linktext, ((_a = counts.get(linktext)) != null ? _a : 0) + count);
     }
   }
@@ -42,10 +41,8 @@ function collectMissingNoteBacklinkSources(unresolvedLinks) {
   const sources = /* @__PURE__ */ new Map();
   for (const [sourcePath, linksBySource] of Object.entries(unresolvedLinks)) {
     for (const [linktext, count] of Object.entries(linksBySource)) {
-      if (count <= 0)
-        continue;
-      if (!sources.has(linktext))
-        sources.set(linktext, /* @__PURE__ */ new Set());
+      if (count <= 0) continue;
+      if (!sources.has(linktext)) sources.set(linktext, /* @__PURE__ */ new Set());
       (_a = sources.get(linktext)) == null ? void 0 : _a.add(sourcePath);
     }
   }
@@ -95,8 +92,7 @@ var GhostPing = class extends import_obsidian.Plugin {
     );
     this.registerEvent(
       this.app.metadataCache.on("resolve", () => {
-        if (this.metadataReady)
-          this.scanAfterResolve();
+        if (this.metadataReady) this.scanAfterResolve();
       })
     );
     this.addCommand({
@@ -117,8 +113,7 @@ var GhostPing = class extends import_obsidian.Plugin {
       }
     });
     this.register(() => {
-      if (this.initialSnapshotTimer !== null)
-        window.clearTimeout(this.initialSnapshotTimer);
+      if (this.initialSnapshotTimer !== null) window.clearTimeout(this.initialSnapshotTimer);
     });
   }
   async loadSettings() {
