@@ -15,11 +15,13 @@ import {
 interface GhostPingSettings {
 	threshold: number;
 	noticeDurationMs: number;
+	debounceMs: number;
 }
 
 const DEFAULT_SETTINGS: GhostPingSettings = {
 	threshold: 3,
 	noticeDurationMs: 10_000,
+	debounceMs: 150,
 };
 
 export default class GhostPing extends Plugin {
@@ -33,11 +35,7 @@ export default class GhostPing extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new GhostPingSettingTab(this.app, this));
 
-		this.scanAfterResolve = debounce(
-			() => this.scanForNewBacklinks(),
-			500,
-			true,
-		);
+		this.updateScanDebounce();
 
 		this.registerEvent(
 			this.app.metadataCache.on("resolved", () => {
@@ -82,6 +80,14 @@ export default class GhostPing extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	updateScanDebounce(): void {
+		this.scanAfterResolve = debounce(
+			() => this.scanForNewBacklinks(),
+			this.settings.debounceMs,
+			true,
+		);
 	}
 
 	private collectCurrentCounts(): Map<string, number> {
@@ -185,6 +191,23 @@ class GhostPingSettingTab extends PluginSettingTab {
 						const duration = Number.parseInt(value, 10);
 						if (Number.isFinite(duration) && duration > 0) {
 							this.plugin.settings.noticeDurationMs = duration;
+							await this.plugin.saveSettings();
+						}
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Scan debounce (ms)")
+			.setDesc("How long Ghost Ping waits after link metadata updates before scanning. Lower values feel faster; higher values reduce repeated scans.")
+			.addText((text) =>
+				text
+					.setPlaceholder(String(DEFAULT_SETTINGS.debounceMs))
+					.setValue(String(this.plugin.settings.debounceMs))
+					.onChange(async (value) => {
+						const debounceMs = Number.parseInt(value, 10);
+						if (Number.isFinite(debounceMs) && debounceMs >= 0) {
+							this.plugin.settings.debounceMs = debounceMs;
+							this.plugin.updateScanDebounce();
 							await this.plugin.saveSettings();
 						}
 					}),

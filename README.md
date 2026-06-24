@@ -8,6 +8,7 @@ Obsidian plugin that notifies when an uncreated note receives a new unresolved b
 - Takes an initial snapshot after metadata is resolved, so existing uncreated notes do not notify on startup.
 - After Markdown metadata changes, compares the new unresolved backlink counts with the previous snapshot.
 - Shows a notice when an uncreated note's count increased and the new count is greater than the configured threshold.
+- Lets you configure the backlink threshold, notice duration, and scan debounce.
 
 ## Development
 

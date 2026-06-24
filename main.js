@@ -74,7 +74,8 @@ function findNewOverThresholdMissingNoteBacklinks(previousCounts, currentCounts,
 // main.ts
 var DEFAULT_SETTINGS = {
   threshold: 3,
-  noticeDurationMs: 1e4
+  noticeDurationMs: 1e4,
+  debounceMs: 150
 };
 var GhostPing = class extends import_obsidian.Plugin {
   constructor() {
@@ -86,11 +87,7 @@ var GhostPing = class extends import_obsidian.Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new GhostPingSettingTab(this.app, this));
-    this.scanAfterResolve = (0, import_obsidian.debounce)(
-      () => this.scanForNewBacklinks(),
-      500,
-      true
-    );
+    this.updateScanDebounce();
     this.registerEvent(
       this.app.metadataCache.on("resolved", () => {
         this.handleMetadataResolved();
@@ -129,6 +126,13 @@ var GhostPing = class extends import_obsidian.Plugin {
   }
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+  updateScanDebounce() {
+    this.scanAfterResolve = (0, import_obsidian.debounce)(
+      () => this.scanForNewBacklinks(),
+      this.settings.debounceMs,
+      true
+    );
   }
   collectCurrentCounts() {
     return collectMissingNoteBacklinkCounts(
@@ -202,6 +206,16 @@ var GhostPingSettingTab = class extends import_obsidian.PluginSettingTab {
         const duration = Number.parseInt(value, 10);
         if (Number.isFinite(duration) && duration > 0) {
           this.plugin.settings.noticeDurationMs = duration;
+          await this.plugin.saveSettings();
+        }
+      })
+    );
+    new import_obsidian.Setting(containerEl).setName("Scan debounce (ms)").setDesc("How long Ghost Ping waits after link metadata updates before scanning. Lower values feel faster; higher values reduce repeated scans.").addText(
+      (text) => text.setPlaceholder(String(DEFAULT_SETTINGS.debounceMs)).setValue(String(this.plugin.settings.debounceMs)).onChange(async (value) => {
+        const debounceMs = Number.parseInt(value, 10);
+        if (Number.isFinite(debounceMs) && debounceMs >= 0) {
+          this.plugin.settings.debounceMs = debounceMs;
+          this.plugin.updateScanDebounce();
           await this.plugin.saveSettings();
         }
       })
