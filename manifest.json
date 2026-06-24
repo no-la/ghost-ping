@@ -1,0 +1,10 @@
+{
+  "id": "ghost-ping",
+  "name": "Ghost Ping",
+  "version": "0.1.0",
+  "minAppVersion": "1.4.0",
+  "description": "Notifies when an uncreated note receives a new backlink after crossing a configurable threshold.",
+  "author": "nola",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
